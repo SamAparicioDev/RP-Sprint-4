@@ -14,12 +14,12 @@ public class GatewayConfig {
     @Bean
     RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("task.controller", r -> r.path("/api/users/**")
+                .route("task.controller", r -> r.path("/api/v2/user/**")
                         .filters(f -> f.filter(jwtAuthenticationFilter))
                         .uri("lb://user.webflux"))
                 .route("auth.controller", r -> r.path("/api/v2/auth/**")
                         .uri("lb://user.webflux"))
-                .route("task.controller", r -> r.path("/api/tasks/**")
+                .route("task.controller", r -> r.path("/api/v2/task/**")
                         .filters(f -> f.filter(jwtAuthenticationFilter))
                         .uri("lb://task.webflux"))
                 .build();
