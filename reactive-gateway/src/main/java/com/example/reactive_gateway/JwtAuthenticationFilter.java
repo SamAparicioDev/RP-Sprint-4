@@ -1,5 +1,6 @@
 package com.example.reactive_gateway;
 
+import io.jsonwebtoken.Claims;
 import jakarta.ws.rs.core.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -16,23 +17,38 @@ public class JwtAuthenticationFilter implements GatewayFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if(!exchange.getRequest().getPath().toString().startsWith("/api/auth")){
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return chain.filter(exchange);
+            if (token == null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+                try {
+                    if(jwtUtil.validateToken(token)){
+                        Claims claims = jwtUtil.parseClaims(token);
+                        exchange.getRequest().mutate().header("username", claims.getSubject()).build();
+
+                    }
+                    else{
+                        return onError(exchange, "Invalid JWT Token", HttpStatus.UNAUTHORIZED);
+                    }
+
+                }catch (Exception e){
+                    return onError(exchange, "JWT Token validation failed", HttpStatus.UNAUTHORIZED);
+                }
+
+            }
+            else{
+                return onError(exchange, "Authorization header is missing or invalid", HttpStatus.UNAUTHORIZED);
             }
 
-            String token = authHeader.substring(7);
-            if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.extractUsername(token);
-                exchange.getRequest().mutate().header("username", username).build();
-            } else {
-                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                return exchange.getResponse().setComplete();
-            }
+
         }
 
 
         return chain.filter(exchange);
+    }
+
+    private Mono<Void> onError(ServerWebExchange exchange, String e, HttpStatus httpStatus) {
+        exchange.getResponse().setStatusCode(httpStatus);
+        return exchange.getResponse().setComplete();
     }
 }
