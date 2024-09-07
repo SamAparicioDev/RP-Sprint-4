@@ -17,7 +17,7 @@ public class GatewayConfig {
                 .route("task.controller", r -> r.path("/api/users/**")
                         .filters(f -> f.filter(jwtAuthenticationFilter))
                         .uri("lb://user.webflux"))
-                .route("auth.controller", r -> r.path("/api/auth/**")
+                .route("auth.controller", r -> r.path("/api/v2/auth/**")
                         .uri("lb://user.webflux"))
                 .route("task.controller", r -> r.path("/api/tasks/**")
                         .filters(f -> f.filter(jwtAuthenticationFilter))
