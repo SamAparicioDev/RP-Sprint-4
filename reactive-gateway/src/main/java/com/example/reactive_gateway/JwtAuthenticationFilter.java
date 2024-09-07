@@ -15,10 +15,15 @@ public class JwtAuthenticationFilter implements GatewayFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if(!exchange.getRequest().getPath().toString().startsWith("/api/auth")){
+        if(!exchange.getRequest().getPath().toString().startsWith("/api/auth")
+           && !exchange.getRequest().getPath().toString().startsWith("/api/v2/user/save")){
             if (token == null && token.startsWith("Bearer ")) {
                 token = token.substring(7);
                 try {
