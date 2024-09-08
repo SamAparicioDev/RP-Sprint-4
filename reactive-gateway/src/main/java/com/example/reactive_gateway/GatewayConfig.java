@@ -13,11 +13,11 @@ public class GatewayConfig {
     @Bean
     RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("user.server", route ->
-                        route.path("/api/v2/user/**").filters(f -> f.filter(jwtAuthenticationFilter))
-                                .uri("lb://user.webflux"))
                 .route("user.server.register", route->
                         route.path("/api/v2/user/save")
+                                .uri("lb://user.webflux"))
+                .route("user.server", route ->
+                        route.path("/api/v2/user/**").filters(f -> f.filter(jwtAuthenticationFilter))
                                 .uri("lb://user.webflux"))
                 .route("auth.serve", route ->
                         route.path("/api/v2/auth/**")

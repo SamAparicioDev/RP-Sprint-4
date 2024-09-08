@@ -22,12 +22,11 @@ public class JwtAuthenticationFilter implements GatewayFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if(!exchange.getRequest().getPath().toString().startsWith("/api/auth")
-           && !exchange.getRequest().getPath().toString().startsWith("/api/v2/user/save")){
-            if (token == null && token.startsWith("Bearer ")) {
+        if(!exchange.getRequest().getPath().toString().startsWith("/api/auth")){
+            if (token != null && token.startsWith("Bearer ")) {
                 token = token.substring(7);
                 try {
-                    if(jwtUtil.validateToken(token)){
+                    if(!jwtUtil.validateToken(token)){
                         Claims claims = jwtUtil.parseClaims(token);
                         exchange.getRequest().mutate().header("username", claims.getSubject()).build();
 
